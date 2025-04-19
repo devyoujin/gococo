@@ -1,0 +1,2 @@
+# gococo
+Golang Code Coverage
