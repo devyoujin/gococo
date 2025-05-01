@@ -3,29 +3,28 @@ package report
 import (
 	"fmt"
 	"os/exec"
-	"path/filepath"
 )
 
-const (
-	htmlReportFileName = "coverage.html"
-	textReportFileName = "coverage.txt"
-)
-
-type reporter struct {
-	coverageDir string
-	coveragePath string
+type Reporter struct {
+	coverageProfile string
+	htmlReportFileName string
+	textReportFileName string
 }
 
-func NewReporter (coverageDir string, coveragePath string) *reporter {
-	return &reporter{
-		coverageDir: coverageDir,
-		coveragePath: coveragePath,
+func NewReporter(
+	coverageProfile string,
+	htmlReportFileName string,
+	textReportFileName string,
+	) *Reporter {
+	return &Reporter{
+		coverageProfile: coverageProfile,
+		htmlReportFileName: htmlReportFileName,
+		textReportFileName: textReportFileName,
 	}
 }
 
-func (reporter *reporter) GenerateHtmlReport() error {
-	outputPath := filepath.Join(reporter.coverageDir, htmlReportFileName)
-	cmd := exec.Command("go", "tool", "cover", "-html="+reporter.coveragePath, "-o", outputPath)
+func (reporter *Reporter) GenerateHtmlReport() error {
+	cmd := exec.Command("go", "tool", "cover", "-html="+reporter.coverageProfile, "-o", reporter.htmlReportFileName)
 	err := cmd.Run()
 	if err != nil {
 		return fmt.Errorf("failed to generate html report: %w", err)
@@ -33,9 +32,8 @@ func (reporter *reporter) GenerateHtmlReport() error {
 	return nil
 }
 
-func (reporter *reporter) GenerateTextReport() error {
-	outputPath := filepath.Join(reporter.coverageDir, textReportFileName)
-	cmd := exec.Command("go", "tool", "cover", "-func="+reporter.coveragePath, "-o", outputPath)
+func (reporter *Reporter) GenerateTextReport() error {
+	cmd := exec.Command("go", "tool", "cover", "-func="+reporter.coverageProfile, "-o="+reporter.textReportFileName)
 	err := cmd.Run()
 	if err != nil {
 		return fmt.Errorf("failed to generate text report: %w", err)

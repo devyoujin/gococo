@@ -3,16 +3,16 @@ package main
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
-	"github.com/devyoujin/gococo/internal/coverage"
-	"github.com/devyoujin/gococo/internal/report"
 	"github.com/spf13/cobra"
 )
 
 const (
-	defaultCoverageDirectory = ".gococo"
-	defaultCoverageFileName = "coverage.out"
+	coverageDir = ".gococo"
+	mergedCoverageDir = "data"
+	coverageProfile  = "coverage.out"
+	coverageReportHtml = "coverage.html"
+	coverageReportText = "coverage.txt"
 )
 
 func main() {
@@ -23,26 +23,16 @@ func main() {
 	}
 }
 
-var rootCmd = &cobra.Command{
-	Use:   "gococo",
-	Short: "A CLI tool to generate consolidated test coverage for Go multi-module projects",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		coverageRunner := coverage.NewRunner(defaultCoverageDirectory, defaultCoverageFileName)
-		if err := coverageRunner.RunCoverage(); err != nil {
-			return fmt.Errorf("failed to run coverage: %w", err)
-		}
-		reporter := report.NewReporter(defaultCoverageDirectory, filepath.Join(defaultCoverageDirectory, defaultCoverageFileName))
-		if err := reporter.GenerateTextReport(); err != nil {
-			return fmt.Errorf("failed to generate text report: %w", err)
-		}
-		if err := reporter.GenerateHtmlReport(); err != nil {
-			return fmt.Errorf("failed to generate html report: %w", err)
-		}
-		return nil
-	},
-}
-
 func NewRootCommand() *cobra.Command {
-	return rootCmd
+	return &cobra.Command{
+		Use:   "gococo",
+		Short: "A CLI tool to generate consolidated test coverage for Go multi-module projects",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			coverageRunner := NewRunner(coverageDir, mergedCoverageDir, coverageProfile, coverageReportHtml, coverageReportText)
+			if err := coverageRunner.Run(); err != nil {
+				return fmt.Errorf("failed to run coverage: %w", err)
+			}
+			return nil
+		},
+	}
 }
-
