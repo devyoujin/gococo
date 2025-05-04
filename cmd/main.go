@@ -1,8 +1,7 @@
-package main
+package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -14,14 +13,6 @@ const (
 	coverageReportHtml = "coverage.html"
 	coverageReportText = "coverage.txt"
 )
-
-func main() {
-	rootCmd := NewRootCommand()
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintf(os.Stderr, "failed to execute command: %+v", err)
-		os.Exit(1)
-	}
-}
 
 func NewRootCommand() *cobra.Command {
 	return &cobra.Command{
