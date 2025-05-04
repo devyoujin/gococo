@@ -7,6 +7,7 @@ import (
 
 	"github.com/devyoujin/gococo/internal/coverage"
 	"github.com/devyoujin/gococo/internal/report"
+	"github.com/devyoujin/gococo/internal/utils"
 )
 
 type Runner struct {
@@ -26,9 +27,9 @@ func NewRunner(coverageDir string, mergedCoverageDir string, coverageProfile str
 	coverageProfile = filepath.Join(coverageDir, coverageProfile)
 	coverageReportHtml = filepath.Join(coverageDir, coverageReportHtml)
 	coverageReportText = filepath.Join(coverageDir, coverageReportText)
-
-	coverageManager := coverage.NewManager(pwd, mergedCoverageDir, coverageProfile)
-	coverageReporter := report.NewReporter(coverageProfile, coverageReportHtml, coverageReportText)
+	executor := utils.NewCommandRunner()
+	coverageManager := coverage.NewManager(executor, pwd, mergedCoverageDir, coverageProfile)
+	coverageReporter := report.NewReporter(executor, coverageProfile, coverageReportHtml, coverageReportText)
 	return &Runner{
 		coverageManager:   coverageManager,
 		coverageReporter:  coverageReporter,
@@ -51,7 +52,7 @@ func (runner *Runner) Run() error {
 	if err != nil {
 		return fmt.Errorf("failed to remove coverage data directory: %w", err)
 	}
-	err = os.MkdirAll(runner.mergedCoverageDir, 0755);
+	err = os.MkdirAll(runner.mergedCoverageDir, 0755)
 	if err != nil {
 		return fmt.Errorf("failed to create coverage data directory: %w", err)
 	}

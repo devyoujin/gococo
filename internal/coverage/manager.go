@@ -5,6 +5,8 @@ import (
 	"io/fs"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/devyoujin/gococo/internal/utils"
 )
 
 type ManagerInterface interface {
@@ -14,19 +16,22 @@ type ManagerInterface interface {
 }
 
 type Manager struct {
-	pwd string
+	executor          utils.CommandExecutor
+	pwd               string
 	mergedCoverageDir string
-	coverageProfile string
+	coverageProfile   string
 }
 
 func NewManager(
+	executor utils.CommandExecutor,
 	pwd string,
 	mergedCoverageDir string,
 	coverageProfile string) ManagerInterface {
 	return &Manager{
 		pwd:               pwd,
 		mergedCoverageDir: mergedCoverageDir,
-		coverageProfile:  coverageProfile,
+		coverageProfile:   coverageProfile,
+		executor:          executor,
 	}
 }
 
@@ -48,9 +53,11 @@ func (manager *Manager) FindGoModules() ([]module, error) {
 }
 
 func (manager *Manager) GenerateCoverages(modules []module) error {
+	cmd := exec.Command("go", "test", "-cover", "./...", "-test.gocoverdir="+manager.mergedCoverageDir)
 	for _, module := range modules {
-		if err := module.generateCoverage(manager.mergedCoverageDir); err != nil {
-			return fmt.Errorf("failed to generate coverage in %s: %w", module.name, err)
+		cmd.Dir = module.path
+		if err := manager.executor.Run(cmd); err != nil {
+			return fmt.Errorf("failed to run tests in %s: %w", module.path, err)
 		}
 	}
 	return nil
@@ -58,9 +65,8 @@ func (manager *Manager) GenerateCoverages(modules []module) error {
 
 func (manager *Manager) GenerateCoverProfile() error {
 	cmd := exec.Command("go", "tool", "covdata", "textfmt", "-i="+manager.mergedCoverageDir, "-o="+manager.coverageProfile)
-	err := cmd.Run()
-	if err != nil {
-		return fmt.Errorf("failed to generate text report: %w", err)
+	if err := manager.executor.Run(cmd); err != nil {
+		return fmt.Errorf("failed to generate coverage profile: %w", err)
 	}
 	return nil
 }
