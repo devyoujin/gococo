@@ -53,8 +53,8 @@ func (manager *Manager) FindGoModules() ([]module, error) {
 }
 
 func (manager *Manager) GenerateCoverages(modules []module) error {
-	cmd := exec.Command("go", "test", "-cover", "./...", "-test.gocoverdir="+manager.mergedCoverageDir)
 	for _, module := range modules {
+		cmd := exec.Command("go", "test", "-cover", "./...", "-test.gocoverdir="+manager.mergedCoverageDir)
 		cmd.Dir = module.path
 		if err := manager.executor.Run(cmd); err != nil {
 			return fmt.Errorf("failed to run tests in %s: %w", module.path, err)
