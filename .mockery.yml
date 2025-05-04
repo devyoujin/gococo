@@ -1,0 +1,11 @@
+all: False
+template: testify
+packages:
+  github.com/devyoujin/gococo/internal/utils:
+    config:
+      dir: "{{.InterfaceDir}}"
+      filename: "mock_{{.InterfaceName | snakecase}}.go"
+      structname: "{{.Mock}}{{.InterfaceName}}"
+    interfaces:
+      CommandExecutor:
+  
