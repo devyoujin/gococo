@@ -38,6 +38,7 @@ func NewRunner(coverageDir string, mergedCoverageDir string, coverageProfile str
 }
 
 func (runner *Runner) Run() error {
+	var err error
 	modules, err := runner.coverageManager.FindGoModules()
 	if err != nil {
 		return fmt.Errorf("failed to find go modules: %w", err)
@@ -46,10 +47,12 @@ func (runner *Runner) Run() error {
 		fmt.Print("no go modules found in the current directory")
 		return nil
 	}
-	if err := os.RemoveAll(runner.coverageDir); err != nil {
+	err = os.RemoveAll(runner.coverageDir)
+	if err != nil {
 		return fmt.Errorf("failed to remove coverage data directory: %w", err)
 	}
-	if err := os.MkdirAll(runner.mergedCoverageDir, 0755); err != nil {
+	err = os.MkdirAll(runner.mergedCoverageDir, 0755);
+	if err != nil {
 		return fmt.Errorf("failed to create coverage data directory: %w", err)
 	}
 	err = runner.coverageManager.GenerateCoverages(modules)
